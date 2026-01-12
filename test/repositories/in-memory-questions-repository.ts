@@ -1,4 +1,3 @@
-import type { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 import type { QuestionsRepository } from "@/domain/forum/application/repositories/questions-repository.ts";
 import type { Question } from "@/domain/forum/enterprise/entities/question.ts";
 import type { Slug } from "@/domain/forum/enterprise/entities/value-objects/slug.ts";
@@ -12,6 +11,11 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
 
   async create(question: Question): Promise<void> {
     this.data.push(question);
+  }
+
+  async save(question: Question): Promise<void> {
+    const questionIndex = this.data.findIndex((item) => item.id === question.id);
+    this.data[questionIndex] = question;
   }
 
   async findBySlug(slug: Slug): Promise<Question | null> {

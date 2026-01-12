@@ -34,7 +34,7 @@ export class Question extends Entity<QuestionProps> {
   }
 
   set title(title: string) {
-    this.title = title;
+    this.props.title = title;
     this.props.slug = Slug.createFromText(title);
     this.touch();
   }
@@ -44,7 +44,7 @@ export class Question extends Entity<QuestionProps> {
   }
 
   set content(content: string) {
-    this.content = content;
+    this.props.content = content;
     this.touch();
   }
 
