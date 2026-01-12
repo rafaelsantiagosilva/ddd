@@ -4,11 +4,7 @@ import type { Optional } from "@/core/types/optional.ts";
 import { Comment, type CommentProps } from "./comment.ts";
 
 export interface QuestionCommentProps extends CommentProps {
-  authorId: UniqueEntityId;
   questionId: UniqueEntityId;
-  content: string;
-  createdAt: Date;
-  updatedAt?: Date;
 }
 
 export class QuestionComment extends Comment<QuestionCommentProps> {
