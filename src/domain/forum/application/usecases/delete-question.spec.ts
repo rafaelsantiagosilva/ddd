@@ -1,5 +1,4 @@
 import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
-import { Slug } from "../../enterprise/entities/value-objects/slug.ts";
 import { makeQuestion } from "@/test/factories/make-question.ts";
 import { DeleteQuestionUseCase } from "./delete-question.ts";
 
@@ -13,9 +12,7 @@ describe("Delete Question Use Case (Unit)", async () => {
   });
 
   it("should be able to delete a question", async () => {
-    const createdQuestion = makeQuestion({
-      slug: Slug.create("example-question")
-    });
+    const createdQuestion = makeQuestion();
 
     await inMemoryQuestionsRepository.create(createdQuestion);
     await sut.execute({
@@ -27,9 +24,7 @@ describe("Delete Question Use Case (Unit)", async () => {
   });
 
   it("should not be able to delete a question from another user", async () => {
-    const createdQuestion = makeQuestion({
-      slug: Slug.create("example-question")
-    });
+    const createdQuestion = makeQuestion();
 
     await inMemoryQuestionsRepository.create(createdQuestion);
 
