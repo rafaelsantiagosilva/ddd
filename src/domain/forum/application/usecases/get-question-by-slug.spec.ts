@@ -30,7 +30,7 @@ describe("Get Question By Slug Use Case (Unit)", async () => {
   });
 
   it("should not be able to get a inexisting question by slug", async () => {
-    expect(async () => await sut.execute({
+    await expect(async () => await sut.execute({
       slug: Slug.create("new-title")
     })).rejects.toThrowError();
   })
