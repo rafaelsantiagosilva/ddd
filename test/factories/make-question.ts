@@ -15,5 +15,3 @@ export function makeQuestion(
 
   return question;
 }
-
-console.log(makeQuestion());
