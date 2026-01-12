@@ -1,0 +1,68 @@
+import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
+import { makeAnswer } from "@/test/factories/make-answer.ts";
+import { InMemoryAnswersRepository } from "@/test/repositories/in-memory-answers-repository.ts";
+import { FetchQuestionAnswersUseCase } from "./fetch-question-answers.ts";
+
+let inMemoryAnswersRepository: InMemoryAnswersRepository;
+let sut: FetchQuestionAnswersUseCase;
+
+describe("Fetch Question Answers (Unit)", () => {
+  beforeEach(() => {
+    inMemoryAnswersRepository = new InMemoryAnswersRepository();
+    sut = new FetchQuestionAnswersUseCase(inMemoryAnswersRepository);
+  });
+
+  it("should be able to fetch question answers", async () => {
+    const questionId = new UniqueEntityId("question-id");
+
+    await inMemoryAnswersRepository.create(
+      makeAnswer({
+        questionId
+      })
+    );
+
+    await inMemoryAnswersRepository.create(
+      makeAnswer({
+        questionId
+      })
+    );
+
+    await inMemoryAnswersRepository.create(
+      makeAnswer({
+        questionId
+      })
+    );
+
+    await inMemoryAnswersRepository.create(
+      makeAnswer({
+        questionId
+      })
+    );
+
+    const { answers } = await sut.execute({
+      page: 1,
+      questionId: questionId.toString()
+    });
+
+    expect(answers).toHaveLength(4);
+  });
+
+  it("should be able to fetch paginated question answers", async () => {
+    const questionId = new UniqueEntityId("question-id");
+
+    for (let i = 0; i < 22; i++) {
+      await inMemoryAnswersRepository.create(
+        makeAnswer({
+          questionId
+        })
+      );
+    }
+
+    const { answers } = await sut.execute({
+      questionId: questionId.toString(),
+      page: 2
+    });
+
+    expect(answers).toHaveLength(2);
+  });
+});
