@@ -17,7 +17,10 @@ export class CreateQuestionUseCase {
     private questionsRepository: QuestionsRepository
   ) { }
 
-  async execute({ authorId, title, content }: CreateQuestionUseCaseRequest) {
+  async execute({
+    authorId,
+    title,
+    content }: CreateQuestionUseCaseRequest): Promise<CreateQuestionUseCaseResponse> {
     const question = Question.create({
       authorId: new UniqueEntityId(authorId),
       title,
