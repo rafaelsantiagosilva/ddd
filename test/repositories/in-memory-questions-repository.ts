@@ -1,3 +1,4 @@
+import type { PaginationParams } from "@/core/repositories/pagination-params.ts";
 import type { QuestionsRepository } from "@/domain/forum/application/repositories/questions-repository.ts";
 import type { Question } from "@/domain/forum/enterprise/entities/question.ts";
 import type { Slug } from "@/domain/forum/enterprise/entities/value-objects/slug.ts";
@@ -9,6 +10,18 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     return this.data.find((question) => question.id.toString() === id) ?? null;
   }
 
+  async findBySlug(slug: Slug): Promise<Question | null> {
+    return this.data.find((question) => question.slug.value === slug.value) ?? null;
+  }
+
+  async findManyRecent({ page }: PaginationParams): Promise<Question[]> {
+    const questions = this.data
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice((page - 1) * 20, page * 20);
+
+    return questions;
+  }
+
   async create(question: Question): Promise<void> {
     this.data.push(question);
   }
@@ -16,10 +29,6 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
   async save(question: Question): Promise<void> {
     const questionIndex = this.data.findIndex((item) => item.id === question.id);
     this.data[questionIndex] = question;
-  }
-
-  async findBySlug(slug: Slug): Promise<Question | null> {
-    return this.data.find((question) => question.slug.value === slug.value) ?? null;
   }
 
   async delete(question: Question): Promise<void> {
