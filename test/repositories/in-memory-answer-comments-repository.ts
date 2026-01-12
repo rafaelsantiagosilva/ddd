@@ -4,7 +4,16 @@ import type { AnswerComment } from "@/domain/forum/enterprise/entities/answer-co
 export class InMemoryAnswerCommentsRepository implements AnswerCommentsRepository {
   public data: AnswerComment[] = [];
 
+  async findById(id: string): Promise<AnswerComment | null> {
+    return this.data.find(comment => comment.id.toString() === id) ?? null;
+  }
+
   async create(comment: AnswerComment): Promise<void> {
     this.data.push(comment);
+  }
+
+  async delete(comment: AnswerComment) {
+    const commentIndex = this.data.findIndex(item => item.id === comment.id);
+    this.data.splice(commentIndex, 1);
   }
 }
