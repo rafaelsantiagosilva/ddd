@@ -1,6 +1,8 @@
-import { InMemoryAnswersRepository } from "@/test/repositories/in-memory-answers-repository.ts";
 import { makeAnswer } from "@/test/factories/make-answer.ts";
+import { InMemoryAnswersRepository } from "@/test/repositories/in-memory-answers-repository.ts";
 import { EditAnswerUseCase } from "./edit-answer.ts";
+import { NotAllowedError } from "./errors/not-allowed-error.ts";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
 
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let sut: EditAnswerUseCase;
@@ -16,16 +18,17 @@ describe("Edit Answer Use Case (Unit)", async () => {
 
     await inMemoryAnswersRepository.create(createdAnswer);
 
-    await sut.execute({
+    const result = await sut.execute({
       id: createdAnswer.id.toString(),
       authorId: createdAnswer.authorId.toString(),
       content: "New content to this answer..."
     });
 
-    const result = await inMemoryAnswersRepository.findById(createdAnswer.id.toString());
+    const editedAnswer = await inMemoryAnswersRepository.findById(createdAnswer.id.toString());
 
-    expect(result).toBeTruthy();
-    expect(result!.content).toBe("New content to this answer...");
+    expect(result.isRight()).toBe(true);
+    expect(editedAnswer).toBeTruthy();
+    expect(editedAnswer!.content).toBe("New content to this answer...");
   });
 
   it("should not be able to edit a answer from another user", async () => {
@@ -33,19 +36,25 @@ describe("Edit Answer Use Case (Unit)", async () => {
 
     await inMemoryAnswersRepository.create(createdAnswer);
 
-    await expect(async () => await sut.execute({
+    const result = await sut.execute({
       id: createdAnswer.id.toString(),
       authorId: "inexisting-author-id",
       content: "New content to this answer..."
-    })).rejects.toThrowError();
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(NotAllowedError);
   });
 
   it("should not be able to edit a inexisting answer", async () => {
-    await expect(async () => await sut.execute({
+    const result = await sut.execute({
       id: "inexisting-id",
       authorId: "inexisting-author-id",
       content: "New content to this answer..."
-    })).rejects.toThrowError();
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   });
 });
 

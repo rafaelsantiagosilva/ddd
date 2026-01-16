@@ -15,36 +15,20 @@ describe("Fetch Question Answers (Unit)", () => {
   it("should be able to fetch question answers", async () => {
     const questionId = new UniqueEntityId("question-id");
 
-    await inMemoryAnswersRepository.create(
-      makeAnswer({
-        questionId
-      })
-    );
+    for (let i = 0; i < 4; i++)
+      await inMemoryAnswersRepository.create(
+        makeAnswer({
+          questionId
+        })
+      );
 
-    await inMemoryAnswersRepository.create(
-      makeAnswer({
-        questionId
-      })
-    );
-
-    await inMemoryAnswersRepository.create(
-      makeAnswer({
-        questionId
-      })
-    );
-
-    await inMemoryAnswersRepository.create(
-      makeAnswer({
-        questionId
-      })
-    );
-
-    const { answers } = await sut.execute({
+    const result = await sut.execute({
       page: 1,
       questionId: questionId.toString()
     });
 
-    expect(answers).toHaveLength(4);
+    expect(result.isRight()).toBe(true);
+    expect(result.value?.answers).toHaveLength(4);
   });
 
   it("should be able to fetch paginated question answers", async () => {
@@ -58,11 +42,12 @@ describe("Fetch Question Answers (Unit)", () => {
       );
     }
 
-    const { answers } = await sut.execute({
+    const result = await sut.execute({
       questionId: questionId.toString(),
       page: 2
     });
 
-    expect(answers).toHaveLength(2);
+    expect(result.isRight()).toBe(true);
+    expect(result.value?.answers).toHaveLength(2);
   });
 });

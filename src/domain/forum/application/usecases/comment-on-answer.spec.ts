@@ -22,12 +22,13 @@ describe("Comment On Answer Use Case (Unit)", () => {
 
     await inMemoryAnswersRepository.create(answer);
 
-    await sut.execute({
+    const result = await sut.execute({
       answerId: answer.id.toString(),
       authorId: answer.authorId.toString(),
       content: "Test comment"
     });
 
+    expect(result.isRight()).toBe(true);
     expect(inMemoryAnswerCommentsRepository.data[0]).toBeTruthy();
   });
 });

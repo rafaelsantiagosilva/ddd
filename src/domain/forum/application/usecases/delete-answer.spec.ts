@@ -1,7 +1,8 @@
-import { InMemoryAnswersRepository } from "@/test/repositories/in-memory-answers-repository.ts";
-import { Slug } from "../../enterprise/entities/value-objects/slug.ts";
 import { makeAnswer } from "@/test/factories/make-answer.ts";
+import { InMemoryAnswersRepository } from "@/test/repositories/in-memory-answers-repository.ts";
 import { DeleteAnswerUseCase } from "./delete-answer.ts";
+import { NotAllowedError } from "./errors/not-allowed-error.ts";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
 
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let sut: DeleteAnswerUseCase;
@@ -16,11 +17,13 @@ describe("Delete Answer Use Case (Unit)", async () => {
     const createdAnswer = makeAnswer();
 
     await inMemoryAnswersRepository.create(createdAnswer);
-    await sut.execute({
+
+    const result = await sut.execute({
       id: createdAnswer.id.toString(),
       authorId: createdAnswer.authorId.toString()
     });
 
+    expect(result.isRight()).toBe(true);
     expect(inMemoryAnswersRepository.data).toHaveLength(0);
   });
 
@@ -29,17 +32,23 @@ describe("Delete Answer Use Case (Unit)", async () => {
 
     await inMemoryAnswersRepository.create(createdAnswer);
 
-    await expect(async () => await sut.execute({
+    const result = await sut.execute({
       id: createdAnswer.id.toString(),
       authorId: "inexisting-author-id"
-    })).rejects.toThrowError();
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(NotAllowedError);
   });
 
   it("should not be able to delete a inexisting answer", async () => {
-    await expect(async () => await sut.execute({
+    const result = await sut.execute({
       id: "inexisting-id",
       authorId: "inexisting-author-id"
-    })).rejects.toThrowError();
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   });
 });
 

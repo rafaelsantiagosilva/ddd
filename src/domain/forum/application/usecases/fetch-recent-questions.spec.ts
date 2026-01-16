@@ -30,11 +30,12 @@ describe("Fetch Recent Questions", () => {
       })
     );
 
-    const { questions } = await sut.execute({
+    const result = await sut.execute({
       page: 1
     });
 
-    expect(questions).toStrictEqual([
+    expect(result.isRight()).toBe(true);
+    expect(result.value?.questions).toStrictEqual([
       expect.objectContaining({ createdAt: new Date(2022, 0, 23) }),
       expect.objectContaining({ createdAt: new Date(2022, 0, 20) }),
       expect.objectContaining({ createdAt: new Date(2022, 0, 18) }),
@@ -48,10 +49,11 @@ describe("Fetch Recent Questions", () => {
       )
     }
 
-    const { questions } = await sut.execute({
+    const result = await sut.execute({
       page: 2
     });
 
-    expect(questions).toHaveLength(2);
+    expect(result.isRight()).toBe(true);
+    expect(result.value?.questions).toHaveLength(2);
   });
 });

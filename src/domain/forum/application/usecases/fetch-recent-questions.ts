@@ -1,3 +1,4 @@
+import { right, type Either } from "@/core/either.ts";
 import type { Question } from "../../enterprise/entities/question.ts";
 import type { QuestionsRepository } from "../repositories/questions-repository.ts";
 
@@ -5,9 +6,7 @@ type FetchRecentQuestionsUseCaseRequest = {
   page: number;
 };
 
-type FetchRecentQuestionsUseCaseResponse = {
-  questions: Question[]
-};
+type FetchRecentQuestionsUseCaseResponse = Either<null, { questions: Question[] }>;
 
 export class FetchRecentQuestionsUseCase {
   constructor(private questionsRepository: QuestionsRepository) { }
@@ -15,6 +14,6 @@ export class FetchRecentQuestionsUseCase {
   async execute({ page }: FetchRecentQuestionsUseCaseRequest): Promise<FetchRecentQuestionsUseCaseResponse> {
     const questions = await this.questionsRepository.findManyRecent({ page });
 
-    return { questions };
+    return right({ questions });
   }
 }

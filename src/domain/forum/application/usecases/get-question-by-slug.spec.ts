@@ -1,9 +1,8 @@
-import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
-import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
-import { Question } from "../../enterprise/entities/question.ts";
-import { Slug } from "../../enterprise/entities/value-objects/slug.ts";
-import { GetQuestionBySlugUseCase } from "./get-question-by-slug.ts";
 import { makeQuestion } from "@/test/factories/make-question.ts";
+import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
+import { Slug } from "../../enterprise/entities/value-objects/slug.ts";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
+import { GetQuestionBySlugUseCase } from "./get-question-by-slug.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
 let sut: GetQuestionBySlugUseCase;
@@ -21,18 +20,22 @@ describe("Get Question By Slug Use Case (Unit)", async () => {
 
     await inMemoryQuestionsRepository.create(createdQuestion);
 
-    const { question } = await sut.execute({
+    const result = await sut.execute({
       slug: Slug.create("example-question")
     });
 
-    expect(question.id).toBeTruthy();
-    expect(question.slug.value).toBe("example-question");
+    expect(result.isRight()).toBe(true);
+    // @ts-ignore is a success
+    expect(result.value.question.slug.value).toBe("example-question");
   });
 
   it("should not be able to get a inexisting question by slug", async () => {
-    await expect(async () => await sut.execute({
+    const result = await sut.execute({
       slug: Slug.create("new-title")
-    })).rejects.toThrowError();
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   })
 });
 
