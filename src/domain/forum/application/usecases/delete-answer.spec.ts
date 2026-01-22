@@ -3,13 +3,19 @@ import { InMemoryAnswersRepository } from "@/test/repositories/in-memory-answers
 import { DeleteAnswerUseCase } from "./delete-answer.ts";
 import { NotAllowedError } from "./errors/not-allowed-error.ts";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
+import { InMemoryAnswerAttachmentsRepository } from "@/test/repositories/in-memory-answer-attachments-repository.ts";
+import { makeAnswerAttachment } from "@/test/factories/make-answer-attachment.ts";
 
+let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository;
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let sut: DeleteAnswerUseCase;
 
 describe("Delete Answer Use Case (Unit)", async () => {
   beforeEach(() => {
-    inMemoryAnswersRepository = new InMemoryAnswersRepository();
+    inMemoryAnswerAttachmentsRepository = new InMemoryAnswerAttachmentsRepository();
+    inMemoryAnswersRepository = new InMemoryAnswersRepository(
+      inMemoryAnswerAttachmentsRepository
+    );
     sut = new DeleteAnswerUseCase(inMemoryAnswersRepository);
   });
 
@@ -18,6 +24,18 @@ describe("Delete Answer Use Case (Unit)", async () => {
 
     await inMemoryAnswersRepository.create(createdAnswer);
 
+    inMemoryAnswerAttachmentsRepository.data.push(
+      makeAnswerAttachment({
+        answerId: createdAnswer.id
+      })
+    );
+
+    inMemoryAnswerAttachmentsRepository.data.push(
+      makeAnswerAttachment({
+        answerId: createdAnswer.id
+      })
+    );
+
     const result = await sut.execute({
       id: createdAnswer.id.toString(),
       authorId: createdAnswer.authorId.toString()
@@ -25,6 +43,7 @@ describe("Delete Answer Use Case (Unit)", async () => {
 
     expect(result.isRight()).toBe(true);
     expect(inMemoryAnswersRepository.data).toHaveLength(0);
+    expect(inMemoryAnswerAttachmentsRepository.data).toHaveLength(0);
   });
 
   it("should not be able to delete a answer from another user", async () => {

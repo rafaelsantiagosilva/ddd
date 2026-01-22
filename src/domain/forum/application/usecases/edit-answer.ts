@@ -2,19 +2,27 @@ import { left, right, type Either } from "@/core/either.ts";
 import type { AnswersRepository } from "../repositories/answers-repository.ts";
 import { NotAllowedError } from "./errors/not-allowed-error.ts";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
+import { AnswerAttachment } from "../../enterprise/entities/answer-attachement.ts";
+import type { AnswerAttachmentRepository } from "../repositories/answer-attachments-repository.ts";
+import { AnswerAttachmentList } from "../../enterprise/entities/answer-attachment-list.ts";
+import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 
 type EditAnswerUseCaseRequest = {
   id: string;
   authorId: string;
+  attachmentsIds: string[];
   content: string;
 }
 
 type EditAnswerUseCaseResponse = Either<ResourceNotFoundError | NotAllowedError, {}>;
 
 export class EditAnswerUseCase {
-  constructor(private answersRepository: AnswersRepository) { }
+  constructor(
+    private answersRepository: AnswersRepository,
+    private answerAttachmentsRepository: AnswerAttachmentRepository
+  ) { }
 
-  async execute({ id, authorId, content }: EditAnswerUseCaseRequest): Promise<EditAnswerUseCaseResponse> {
+  async execute({ id, authorId, attachmentsIds, content }: EditAnswerUseCaseRequest): Promise<EditAnswerUseCaseResponse> {
     const answer = await this.answersRepository.findById(id);
 
     if (!answer)
@@ -23,7 +31,23 @@ export class EditAnswerUseCase {
     if (answer.authorId.toString() !== authorId)
       return left(new NotAllowedError());
 
+    const currentAnswerAttachments = await this.answerAttachmentsRepository.findManyByAnswerId(id)
+
+    const answerAttachmentList = new AnswerAttachmentList(
+      currentAnswerAttachments
+    );
+
+    const answerAttachments = attachmentsIds.map((attachmentId) => {
+      return AnswerAttachment.create({
+        attachmentId: new UniqueEntityId(attachmentId),
+        answerId: answer.id
+      })
+    });
+
+    answerAttachmentList.update(answerAttachments);
+
     answer.content = content;
+    answer.attachments = answerAttachmentList;
 
     await this.answersRepository.save(answer);
 
