@@ -6,9 +6,11 @@ import { InMemoryQuestionAttachmentsRepository } from "@/test/repositories/in-me
 import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
 import { ChooseQuestionBestAnswerUseCase } from "./choose-question-best-answer.ts";
 import { NotAllowedError } from "./errors/not-allowed-error.ts";
+import { InMemoryAnswerAttachmentsRepository } from "@/test/repositories/in-memory-answer-attachments-repository.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
 let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
+let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository;
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let sut: ChooseQuestionBestAnswerUseCase;
 
@@ -18,7 +20,10 @@ describe("Choose Question Best Answer (Unit)", () => {
     inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
       inMemoryQuestionAttachmentsRepository
     );
-    inMemoryAnswersRepository = new InMemoryAnswersRepository();
+    inMemoryAnswerAttachmentsRepository = new InMemoryAnswerAttachmentsRepository();
+    inMemoryAnswersRepository = new InMemoryAnswersRepository(
+      inMemoryAnswerAttachmentsRepository
+    );
     sut = new ChooseQuestionBestAnswerUseCase(
       inMemoryQuestionsRepository,
       inMemoryAnswersRepository
