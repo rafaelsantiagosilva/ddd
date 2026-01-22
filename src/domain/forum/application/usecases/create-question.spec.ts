@@ -1,13 +1,18 @@
 import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
 import { CreateQuestionUseCase } from "./create-question.ts";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
+import { InMemoryQuestionAttachmentsRepository } from "@/test/repositories/in-memory-question-attachments-repository.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let sut: CreateQuestionUseCase;
 
 describe("Create Question Use Case (Unit)", async () => {
   beforeEach(() => {
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository();
+    inMemoryQuestionAttachmentsRepository = new InMemoryQuestionAttachmentsRepository();
+    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+      inMemoryQuestionAttachmentsRepository
+    );
     sut = new CreateQuestionUseCase(inMemoryQuestionsRepository);
   });
 
