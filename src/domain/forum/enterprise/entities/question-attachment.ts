@@ -1,7 +1,7 @@
 import { Entity } from "@/core/entities/entity.ts";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 
-type QuestionAttachmentProps = {
+export type QuestionAttachmentProps = {
   questionId: UniqueEntityId;
   attachmentId: UniqueEntityId;
 }

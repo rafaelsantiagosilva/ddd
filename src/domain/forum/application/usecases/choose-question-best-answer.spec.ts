@@ -1,18 +1,23 @@
+import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
+import { makeAnswer } from "@/test/factories/make-answer.ts";
+import { makeQuestion } from "@/test/factories/make-question.ts";
 import { InMemoryAnswersRepository } from "@/test/repositories/in-memory-answers-repository.ts";
+import { InMemoryQuestionAttachmentsRepository } from "@/test/repositories/in-memory-question-attachments-repository.ts";
 import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
 import { ChooseQuestionBestAnswerUseCase } from "./choose-question-best-answer.ts";
-import { makeQuestion } from "@/test/factories/make-question.ts";
-import { makeAnswer } from "@/test/factories/make-answer.ts";
-import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 import { NotAllowedError } from "./errors/not-allowed-error.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let sut: ChooseQuestionBestAnswerUseCase;
 
 describe("Choose Question Best Answer (Unit)", () => {
   beforeEach(() => {
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository();
+    inMemoryQuestionAttachmentsRepository = new InMemoryQuestionAttachmentsRepository();
+    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+      inMemoryQuestionAttachmentsRepository
+    );
     inMemoryAnswersRepository = new InMemoryAnswersRepository();
     sut = new ChooseQuestionBestAnswerUseCase(
       inMemoryQuestionsRepository,

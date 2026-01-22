@@ -24,8 +24,8 @@ describe("Create Question Use Case (Unit)", async () => {
     expect(result.isRight()).toBe(true);
     expect(inMemoryQuestionsRepository.data[0]).toBe(value?.question);
     expect(inMemoryQuestionsRepository.data[0]?.slug.value).toBe("new-question-title");
-    expect(inMemoryQuestionsRepository.data[0]?.attachments).toHaveLength(2);
-    expect(inMemoryQuestionsRepository.data[0]?.attachments).toStrictEqual([
+    expect(inMemoryQuestionsRepository.data[0]?.attachments.currentItems).toHaveLength(2);
+    expect(inMemoryQuestionsRepository.data[0]?.attachments.currentItems).toStrictEqual([
       expect.objectContaining({ attachmentId: new UniqueEntityId('1') }),
       expect.objectContaining({ attachmentId: new UniqueEntityId('2') })
     ]);

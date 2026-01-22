@@ -1,17 +1,24 @@
-import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
 import { makeQuestion } from "@/test/factories/make-question.ts";
-import { EditQuestionUseCase } from "./edit-question.ts";
+import { InMemoryQuestionAttachmentsRepository } from "@/test/repositories/in-memory-question-attachments-repository.ts";
+import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
 import { Slug } from "../../enterprise/entities/value-objects/slug.ts";
+import { EditQuestionUseCase } from "./edit-question.ts";
 import { NotAllowedError } from "./errors/not-allowed-error.ts";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
+import { makeQuestionAttachment } from "@/test/factories/make-question-attachment.ts";
+import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let sut: EditQuestionUseCase;
 
 describe("Edit Question Use Case (Unit)", async () => {
   beforeEach(() => {
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository();
-    sut = new EditQuestionUseCase(inMemoryQuestionsRepository);
+    inMemoryQuestionAttachmentsRepository = new InMemoryQuestionAttachmentsRepository();
+    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+      inMemoryQuestionAttachmentsRepository
+    );
+    sut = new EditQuestionUseCase(inMemoryQuestionsRepository, inMemoryQuestionAttachmentsRepository);
   });
 
   it("should be able to edit a question", async () => {
@@ -19,18 +26,36 @@ describe("Edit Question Use Case (Unit)", async () => {
 
     await inMemoryQuestionsRepository.create(createdQuestion);
 
+    inMemoryQuestionAttachmentsRepository.data.push(makeQuestionAttachment({
+      questionId: createdQuestion.id,
+      attachmentId: new UniqueEntityId("1")
+    }));
+
+    inMemoryQuestionAttachmentsRepository.data.push(makeQuestionAttachment({
+      questionId: createdQuestion.id,
+      attachmentId: new UniqueEntityId("2")
+    }));
+
     const result = await sut.execute({
       id: createdQuestion.id.toString(),
       authorId: createdQuestion.authorId.toString(),
       title: "New Title",
-      content: "New content to this question..."
+      content: "New content to this question...",
+      attachmentsIds: ["1", "3"]
     });
+
 
     const editedQuestion = await inMemoryQuestionsRepository.findBySlug(Slug.create("new-title"));
 
     expect(result.isRight()).toBe(true);
     expect(editedQuestion).toBeTruthy();
     expect(editedQuestion!.content).toBe("New content to this question...");
+
+    expect(inMemoryQuestionsRepository.data[0]?.attachments.currentItems).toHaveLength(2);
+    expect(inMemoryQuestionsRepository.data[0]?.attachments.currentItems).toStrictEqual([
+      expect.objectContaining({ attachmentId: new UniqueEntityId("1") }),
+      expect.objectContaining({ attachmentId: new UniqueEntityId("3") }),
+    ]);
   });
 
   it("should not be able to edit a question from another user", async () => {
@@ -42,7 +67,8 @@ describe("Edit Question Use Case (Unit)", async () => {
       id: createdQuestion.id.toString(),
       authorId: "inexisting-author-id",
       title: "New Title",
-      content: "New content to this question..."
+      content: "New content to this question...",
+      attachmentsIds: []
     });
 
     expect(result.isLeft()).toBe(true);
@@ -54,7 +80,8 @@ describe("Edit Question Use Case (Unit)", async () => {
       id: "inexisting-id",
       authorId: "inexisting-author-id",
       title: "New Title",
-      content: "New content to this question..."
+      content: "New content to this question...",
+      attachmentsIds: []
     });
 
     expect(result.isLeft()).toBe(true);

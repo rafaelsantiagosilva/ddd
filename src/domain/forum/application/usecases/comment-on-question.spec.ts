@@ -1,15 +1,20 @@
 import { makeQuestion } from "@/test/factories/make-question.ts";
+import { InMemoryQuestionAttachmentsRepository } from "@/test/repositories/in-memory-question-attachments-repository.ts";
 import { InMemoryQuestionCommentsRepository } from "@/test/repositories/in-memory-question-comments-repository.ts";
 import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
 import { CommentOnQuestionUseCase } from "./comment-on-question.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let inMemoryQuestionCommentsRepository: InMemoryQuestionCommentsRepository;
 let sut: CommentOnQuestionUseCase;
 
 describe("Comment On Question Use Case (Unit)", () => {
   beforeEach(() => {
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository();
+    inMemoryQuestionAttachmentsRepository = new InMemoryQuestionAttachmentsRepository();
+    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+      inMemoryQuestionAttachmentsRepository
+    );
     inMemoryQuestionCommentsRepository = new InMemoryQuestionCommentsRepository();
     sut = new CommentOnQuestionUseCase(
       inMemoryQuestionsRepository,

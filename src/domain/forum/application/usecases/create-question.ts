@@ -3,6 +3,7 @@ import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 import { QuestionAttachment } from "../../enterprise/entities/question-attachment.ts";
 import { Question } from "../../enterprise/entities/question.ts";
 import type { QuestionsRepository } from "../repositories/questions-repository.ts";
+import { QuestionAttachmentList } from "../../enterprise/entities/question-attachment-list.ts";
 
 type CreateQuestionUseCaseRequest = {
   title: string;
@@ -30,12 +31,14 @@ export class CreateQuestionUseCase {
       content
     });
 
-    question.attachments = attachmentsIds.map((attachmentId) => {
-      return QuestionAttachment.create({
-        attachmentId: new UniqueEntityId(attachmentId),
-        questionId: question.id
+    question.attachments = new QuestionAttachmentList(
+      attachmentsIds.map((attachmentId) => {
+        return QuestionAttachment.create({
+          attachmentId: new UniqueEntityId(attachmentId),
+          questionId: question.id
+        })
       })
-    });
+    );
 
     await this.questionsRepository.create(question);
 

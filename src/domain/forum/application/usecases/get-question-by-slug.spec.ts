@@ -1,15 +1,20 @@
 import { makeQuestion } from "@/test/factories/make-question.ts";
+import { InMemoryQuestionAttachmentsRepository } from "@/test/repositories/in-memory-question-attachments-repository.ts";
 import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-questions-repository.ts";
 import { Slug } from "../../enterprise/entities/value-objects/slug.ts";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
 import { GetQuestionBySlugUseCase } from "./get-question-by-slug.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
 let sut: GetQuestionBySlugUseCase;
 
 describe("Get Question By Slug Use Case (Unit)", async () => {
   beforeEach(() => {
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository();
+    inMemoryQuestionAttachmentsRepository = new InMemoryQuestionAttachmentsRepository();
+    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+      inMemoryQuestionAttachmentsRepository
+    );
     sut = new GetQuestionBySlugUseCase(inMemoryQuestionsRepository);
   });
 

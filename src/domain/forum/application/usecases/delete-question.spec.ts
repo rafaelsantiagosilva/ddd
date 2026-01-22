@@ -3,13 +3,20 @@ import { InMemoryQuestionsRepository } from "@/test/repositories/in-memory-quest
 import { DeleteQuestionUseCase } from "./delete-question.ts";
 import { NotAllowedError } from "./errors/not-allowed-error.ts";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error.ts";
+import { InMemoryQuestionAttachmentsRepository } from "@/test/repositories/in-memory-question-attachments-repository.ts";
+import { makeQuestionAttachment } from "@/test/factories/make-question-attachment.ts";
+import { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
+let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository
 let sut: DeleteQuestionUseCase;
 
 describe("Delete Question Use Case (Unit)", async () => {
   beforeEach(() => {
-    inMemoryQuestionsRepository = new InMemoryQuestionsRepository();
+    inMemoryQuestionAttachmentsRepository = new InMemoryQuestionAttachmentsRepository();
+    inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
+      inMemoryQuestionAttachmentsRepository
+    );
     sut = new DeleteQuestionUseCase(inMemoryQuestionsRepository);
   });
 
@@ -18,6 +25,16 @@ describe("Delete Question Use Case (Unit)", async () => {
 
     await inMemoryQuestionsRepository.create(createdQuestion);
 
+    inMemoryQuestionAttachmentsRepository.data.push(makeQuestionAttachment({
+      questionId: createdQuestion.id,
+      attachmentId: new UniqueEntityId("1")
+    }));
+
+    inMemoryQuestionAttachmentsRepository.data.push(makeQuestionAttachment({
+      questionId: createdQuestion.id,
+      attachmentId: new UniqueEntityId("2")
+    }));
+
     const result = await sut.execute({
       id: createdQuestion.id.toString(),
       authorId: createdQuestion.authorId.toString()
@@ -25,6 +42,7 @@ describe("Delete Question Use Case (Unit)", async () => {
 
     expect(result.isRight()).toBe(true);
     expect(inMemoryQuestionsRepository.data).toHaveLength(0);
+    expect(inMemoryQuestionAttachmentsRepository.data).toHaveLength(0);
   });
 
   it("should not be able to delete a question from another user", async () => {
