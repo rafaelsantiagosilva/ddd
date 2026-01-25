@@ -3,6 +3,7 @@ import type { QuestionsRepository } from "@/domain/forum/application/repositorie
 import type { Question } from "@/domain/forum/enterprise/entities/question.ts";
 import type { Slug } from "@/domain/forum/enterprise/entities/value-objects/slug.ts";
 import type { InMemoryQuestionAttachmentsRepository } from "./in-memory-question-attachments-repository.ts";
+import { DomainEvents } from "@/core/events/domain-events.ts";
 
 export class InMemoryQuestionsRepository implements QuestionsRepository {
   public data: Question[] = [];
@@ -29,11 +30,13 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
 
   async create(question: Question): Promise<void> {
     this.data.push(question);
+    DomainEvents.dispatchEventsForAggregate(question.id);
   }
 
   async save(question: Question): Promise<void> {
     const questionIndex = this.data.findIndex((item) => item.id === question.id);
     this.data[questionIndex] = question;
+    DomainEvents.dispatchEventsForAggregate(question.id);
   }
 
   async delete(question: Question): Promise<void> {
