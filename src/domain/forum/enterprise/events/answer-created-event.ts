@@ -5,7 +5,7 @@ import type { Answer } from "../entities/answer.ts";
 export class AnswerCreatedEvent implements DomainEvent {
   public ocurredAt: Date;
 
-  constructor(private answer: Answer) {
+  constructor(public answer: Answer) {
     this.ocurredAt = new Date();
   }
 

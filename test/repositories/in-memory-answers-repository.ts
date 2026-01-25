@@ -2,6 +2,7 @@ import type { PaginationParams } from "@/core/repositories/pagination-params.ts"
 import type { AnswersRepository } from "@/domain/forum/application/repositories/answers-repository.ts";
 import type { Answer } from "@/domain/forum/enterprise/entities/answer.ts";
 import type { InMemoryAnswerAttachmentsRepository } from "./in-memory-answer-attachments-repository.ts";
+import { DomainEvents } from "@/core/events/domain-events.ts";
 
 export class InMemoryAnswersRepository implements AnswersRepository {
   public data: Answer[] = [];
@@ -24,6 +25,7 @@ export class InMemoryAnswersRepository implements AnswersRepository {
 
   async create(answer: Answer): Promise<void> {
     this.data.push(answer);
+    DomainEvents.dispatchEventsForAggregate(answer.id);
   }
 
   async save(answer: Answer): Promise<void> {
