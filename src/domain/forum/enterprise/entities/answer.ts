@@ -2,6 +2,8 @@ import { Entity } from "@/core/entities/entity.ts";
 import type { UniqueEntityId } from "@/core/entities/unique-entity-id.ts";
 import type { Optional } from "@/core/types/optional.ts";
 import { AnswerAttachmentList } from "./answer-attachment-list.ts";
+import { AggregateRoot } from "@/core/entities/aggregate-root.ts";
+import { AnswerCreatedEvent } from "../events/answer-created-event.ts";
 
 export type AnswerProps = {
   content: string;
@@ -12,13 +14,20 @@ export type AnswerProps = {
   updatedAt?: Date;
 }
 
-export class Answer extends Entity<AnswerProps> {
+export class Answer extends AggregateRoot<AnswerProps> {
   static create(props: Optional<AnswerProps, 'createdAt' | 'attachments'>, id?: UniqueEntityId) {
     const answer = new Answer({
       ...props,
       attachments: props.attachments ?? new AnswerAttachmentList(),
       createdAt: props.createdAt ?? new Date()
     }, id);
+
+    const isNewAnswer = !id;
+
+    if (isNewAnswer)
+      answer.addDomainEvent(
+        new AnswerCreatedEvent(answer)
+      );
 
     return answer;
   }
